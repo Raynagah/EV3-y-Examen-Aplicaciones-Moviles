@@ -1,0 +1,32 @@
+{
+  "project_info": {
+    "project_number": "132997892215",
+    "project_id": "vidasalud-app-ed873",
+    "storage_bucket": "vidasalud-app-ed873.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:132997892215:android:d63a1da8c1ddb9fa101e72",
+        "android_client_info": {
+          "package_name": "com.example.vidasalud"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAz1tYCoCekcQrpWmdCNpXie_GLssEexR0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        },
+        "cloud_firestore": {
+          "database_url": "https://vidasalud-app-ed873.firebaseio.com"
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

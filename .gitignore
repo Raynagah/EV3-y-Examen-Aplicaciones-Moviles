@@ -1,0 +1,12 @@
+# Android Studio / IntelliJ
+# Ignora la carpeta de configuración del IDE
+/.idea
+
+# Archivos generados por la compilación
+# Ignora la carpeta 'build' que contiene los APKs y otros archivos temporales
+/build
+
+# Archivos de propiedades locales
+# Este archivo contiene rutas específicas de tu PC (como la ubicación del SDK de Android)
+# y nunca debe subirse.
+local.properties
