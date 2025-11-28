@@ -10,29 +10,22 @@ import com.example.vidasalud.ui.screens.bienvenida.PantallaBienvenida
 import com.example.vidasalud.ui.screens.principal.PantallaPrincipalNavegacion
 
 @Composable
-fun NavegacionApp() {
-    val controladorNavegacion = rememberNavController() // Controlador para gestionar las pantallas
+fun NavegacionApp(startDestination: String) { // Recibe el destino inicial
+    val controladorNavegacion = rememberNavController()
 
     NavHost(
-        navController = controladorNavegacion, // Controlador de navegación
-        startDestination = RutasApp.PantallaBienvenida.ruta // Pantalla inicial
+        navController = controladorNavegacion,
+        startDestination = startDestination // Usa el destino calculado
     ) {
-        // Ruta: Pantalla de bienvenida
         composable(route = RutasApp.PantallaBienvenida.ruta) {
-            PantallaBienvenida(controladorNavegacion = controladorNavegacion) // Ir a login o registro
+            PantallaBienvenida(controladorNavegacion = controladorNavegacion)
         }
-
-        // Ruta: Pantalla de inicio de sesión
         composable(route = RutasApp.PantallaLogin.ruta) {
             PantallaLogin(controladorNavegacion = controladorNavegacion)
         }
-
-        // Ruta: Pantalla de registro
         composable(route = RutasApp.PantallaRegistro.ruta) {
             PantallaRegistro(controladorNavegacion = controladorNavegacion)
         }
-
-        // Ruta: Pantalla principal (con menú inferior)
         composable(route = RutasApp.PantallaPrincipal.ruta) {
             PantallaPrincipalNavegacion(navControllerPrincipal = controladorNavegacion)
         }

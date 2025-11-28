@@ -2,11 +2,11 @@ package com.example.vidasalud.presentation.principal
 
 import android.app.Application
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vidasalud.data.repository.AuthRepository
 import com.example.vidasalud.data.repository.RegistroDiario
+import com.example.vidasalud.domain.LogicaSalud
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.delay
@@ -21,7 +21,7 @@ data class ResumenUiState(
     val recomendacion: String = "Cargando consejos...",
     val ultimosPasos: Int = 0,
     val ultimoSueno: Double = 0.0,
-    val metaPasos: Int = 5000, // Dato local
+    val metaPasos: Int = 5000,
     val isLoading: Boolean = false
 )
 
@@ -44,14 +44,10 @@ class ResumenViewModel(application: Application) : AndroidViewModel(application)
         cargarDatos()
     }
 
-    // Función para guardar la meta localmente
     fun actualizarMetaPasos(nuevaMeta: Int) {
         viewModelScope.launch {
-            // Guardar en disco (Local)
             sharedPreferences.edit().putInt("meta_pasos", nuevaMeta).apply()
-            // Actualizar UI
             _uiState.update { it.copy(metaPasos = nuevaMeta) }
-            // Recalcular recomendación con la nueva meta
             cargarDatos()
         }
     }
@@ -59,22 +55,25 @@ class ResumenViewModel(application: Application) : AndroidViewModel(application)
     private fun cargarDatos() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-
-            // Simular pequeña carga para que se vea la animación
             delay(500)
 
-            // 1. Cargar Meta Local (Sin internet)
             val metaGuardada = sharedPreferences.getInt("meta_pasos", 5000)
 
-            // 2. Obtener Nombre
-            val nombre = authRepository.obtenerNombreUsuario() ?: "Usuario"
-
-            // 3. Obtener datos de Firebase
+            // PRIMERO INTENTAMOS CARGAR NOMBRE LOCAL (OFFLINE)
+            var nombre = sharedPreferences.getString("nombre_usuario_local", "Usuario") ?: "Usuario"
             var recomendacionTexto = "¡Bienvenido! Registra tus datos en la pestaña 'Datos'."
             var pasos = 0
             var sueno = 0.0
 
             try {
+                // INTENTAMOS CONECTAR (ONLINE)
+                val nombreRed = authRepository.obtenerNombreUsuario()
+                if (nombreRed != null) {
+                    nombre = nombreRed
+                    // Si hay red, actualizamos el caché local
+                    sharedPreferences.edit().putString("nombre_usuario_local", nombre).apply()
+                }
+
                 val uid = auth.currentUser?.uid
                 if (uid != null) {
                     val snapshot = db.collection("registros_diarios")
@@ -86,20 +85,20 @@ class ResumenViewModel(application: Application) : AndroidViewModel(application)
                         val registros = snapshot.documents.mapNotNull { doc ->
                             doc.toObject(RegistroDiario::class.java)
                         }
-                        // Buscamos el más reciente manualmente
                         val ultimoRegistro = registros.maxByOrNull { it.fecha }
 
                         if (ultimoRegistro != null) {
                             pasos = ultimoRegistro.pasos ?: 0
                             sueno = ultimoRegistro.horas_sueno ?: 0.0
-
-                            // Pasamos la meta guardada para generar el consejo
-                            recomendacionTexto = generarConsejo(pasos, sueno, metaGuardada)
+                            recomendacionTexto = LogicaSalud.generarConsejo(pasos, sueno, metaGuardada)
                         }
                     }
                 }
             } catch (e: Exception) {
-                recomendacionTexto = "Modo Offline: Mostrando datos cacheados."
+                // FALLO DE RED (MODO AVIÓN) -> USAMOS DATOS LOCALES
+                // Como ya cargamos 'nombre' y 'metaGuardada' de SharedPreferences arriba,
+                // la UI se mostrará con esos datos cacheados.
+                recomendacionTexto = "Modo Offline: Mostrando datos guardados. ${LogicaSalud.generarConsejo(pasos, sueno, metaGuardada)}"
             }
 
             _uiState.update {
@@ -112,18 +111,6 @@ class ResumenViewModel(application: Application) : AndroidViewModel(application)
                     isLoading = false
                 )
             }
-        }
-    }
-
-    private fun generarConsejo(pasos: Int, sueno: Double, meta: Int): String {
-        return when {
-            pasos >= meta -> "¡Increíble! Has superado tu meta de $meta pasos. 🎉"
-            pasos > (meta / 2) -> "¡Bien! Llevas el ${(pasos * 100) / meta}% de tu meta diaria."
-            sueno > 0 && sueno < 6 -> "Has dormido poco ($sueno hrs). Prioriza tu descanso hoy."
-            pasos > 0 && pasos < 4000 -> "Llevas $pasos pasos. ¡Intenta salir a caminar un poco!"
-            sueno >= 7 && sueno <= 9 -> "Tu descanso de $sueno horas es óptimo. ¡Sigue así!"
-            pasos == 0 && sueno == 0.0 -> "No hay datos recientes. ¡Ve a la pestaña 'Datos' y registra tu día!"
-            else -> "Mantén tus hábitos saludables y registra tu progreso."
         }
     }
 }
