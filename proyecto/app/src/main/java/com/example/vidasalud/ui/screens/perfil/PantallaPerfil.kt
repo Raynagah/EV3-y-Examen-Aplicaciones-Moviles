@@ -1,5 +1,6 @@
 package com.example.vidasalud.ui.screens.perfil
 
+import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,7 +13,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
@@ -36,7 +36,6 @@ import coil.request.ImageRequest
 import com.example.vidasalud.presentation.perfil.PerfilViewModel
 import com.example.vidasalud.ui.navigation.RutasApp
 import com.example.vidasalud.ui.theme.BotonOscuro
-import com.example.vidasalud.ui.theme.PrimaryLight
 import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,7 +47,6 @@ fun PantallaPerfil(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // Launcher para abrir la Galería
     val launcherImagen = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -56,146 +54,155 @@ fun PantallaPerfil(
     }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Mi Perfil", fontWeight = FontWeight.SemiBold) },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Transparent
-                )
-            )
-        }
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(24.dp),
+                .padding(bottom = paddingValues.calculateBottomPadding()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
+            // --- HEADER DECORATIVO ---
             Box(
-                contentAlignment = Alignment.BottomEnd,
-                modifier = Modifier.padding(bottom = 24.dp)
+                modifier = Modifier.fillMaxWidth()
             ) {
-                if (uiState.currentUser?.fotoPerfilUrl != null) {
-                    Image(
-                        painter = rememberAsyncImagePainter(
-                            model = ImageRequest.Builder(context)
-                                .data(uiState.currentUser?.fotoPerfilUrl)
-                                .crossfade(true)
-                                .build()
-                        ),
-                        contentDescription = "Foto de perfil",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(140.dp)
-                            .clip(CircleShape)
-                            .border(4.dp, Color.White, CircleShape)
-                            .clickable { launcherImagen.launch("image/*") } // Acción al tocar
-                    )
-                } else {
-                    // Placeholder si no hay foto
-                    Box(
-                        modifier = Modifier
-                            .size(140.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                            .border(4.dp, Color.White, CircleShape)
-                            .clickable { launcherImagen.launch("image/*") }, // Acción al tocar
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = null,
-                            modifier = Modifier.size(60.dp),
-                            tint = Color.Gray
-                        )
-                    }
-                }
-
+                // Fondo verde superior con curvas
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(BotonOscuro)
-                        .border(2.dp, Color.White, CircleShape)
-                        .clickable { launcherImagen.launch("image/*") },
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth()
+                        .height(140.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.primary,
+                            shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)
+                        )
+                )
+
+                // Texto del título dentro del verde
+                Text(
+                    text = "Mi Perfil",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 48.dp)
+                )
+
+                // La foto "colgando" del header
+                Box(
+                    contentAlignment = Alignment.BottomEnd,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .offset(y = 60.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.CameraAlt,
-                        contentDescription = "Cambiar foto",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    if (uiState.currentUser?.fotoPerfilUrl != null) {
+                        Image(
+                            painter = rememberAsyncImagePainter(
+                                model = ImageRequest.Builder(context)
+                                    .data(uiState.currentUser?.fotoPerfilUrl)
+                                    .crossfade(true)
+                                    .build()
+                            ),
+                            contentDescription = "Foto",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(CircleShape)
+                                .border(4.dp, MaterialTheme.colorScheme.background, CircleShape)
+                                .clickable { launcherImagen.launch("image/*") }
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .size(120.dp)
+                                .clip(CircleShape)
+                                .background(Color.LightGray)
+                                .border(4.dp, MaterialTheme.colorScheme.background, CircleShape)
+                                .clickable { launcherImagen.launch("image/*") },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.Person, contentDescription = null, tint = Color.White, modifier = Modifier.size(60.dp))
+                        }
+                    }
+
+                    // Botón de cámara pequeño
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(BotonOscuro)
+                            .border(2.dp, MaterialTheme.colorScheme.background, CircleShape)
+                            .clickable { launcherImagen.launch("image/*") },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.CameraAlt, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+                    }
                 }
             }
 
+            // Espacio para compensar el offset de la foto
+            Spacer(modifier = Modifier.height(70.dp))
+
+            // NOMBRE Y CORREO
             Text(
-                text = uiState.currentUser?.nombre ?: "Cargando...",
+                text = uiState.currentUser?.nombre ?: "Usuario",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
-
             Text(
                 text = uiState.currentUser?.correo ?: "",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.Gray
+                color = Color.Gray,
+                style = MaterialTheme.typography.bodyMedium
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
+            // DATOS EN TARJETA
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp) // Flat design
+                elevation = CardDefaults.cardElevation(2.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    ItemPerfil(
-                        icono = Icons.Default.Person,
-                        titulo = "Nombre Completo",
-                        valor = uiState.currentUser?.nombre ?: "--"
-                    )
+                    ItemPerfil(Icons.Default.Person, "Nombre", uiState.currentUser?.nombre ?: "--")
                     Divider(color = Color.LightGray.copy(alpha = 0.2f))
-                    ItemPerfil(
-                        icono = Icons.Default.Email,
-                        titulo = "Correo Electrónico",
-                        valor = uiState.currentUser?.correo ?: "--"
-                    )
+                    ItemPerfil(Icons.Default.Email, "Correo", uiState.currentUser?.correo ?: "--")
                 }
             }
 
             Spacer(modifier = Modifier.weight(1f))
 
+            // BOTÓN CERRAR SESIÓN
             Button(
                 onClick = {
                     FirebaseAuth.getInstance().signOut()
+                    val sharedPreferences = context.getSharedPreferences("VidaSaludPrefs", Context.MODE_PRIVATE)
+                    sharedPreferences.edit().clear().apply()
                     navControllerPrincipal.navigate(RutasApp.PantallaBienvenida.ruta) {
                         popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
                     }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(24.dp)
                     .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFFFEBEE), // Rojo muy suave
-                    contentColor = Color(0xFFD32F2F)    // Rojo alerta
-                ),
-                elevation = ButtonDefaults.buttonElevation(0.dp)
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFEBEE), contentColor = Color(0xFFD32F2F)),
+                shape = RoundedCornerShape(16.dp)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Logout, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Cerrar Sesión", fontWeight = FontWeight.Bold)
-                }
+                Icon(Icons.Default.Logout, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Cerrar Sesión", fontWeight = FontWeight.Bold)
             }
         }
     }
 }
 
+// --- ESTA ES LA FUNCIÓN QUE FALTABA AL FINAL ---
 @Composable
 fun ItemPerfil(icono: ImageVector, titulo: String, valor: String) {
     Row(
