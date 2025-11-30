@@ -1,5 +1,5 @@
 package com.example.vidasalud.data.repository
-// importaciones o.o
+
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -71,11 +71,15 @@ class AuthRepository {
 
         return try {
             val documento = firestore.collection("usuarios").document(uid).get().await() // Obtiene documento
-
             documento.getString("nombre") // Devuelve nombre
         } catch (e: Exception) {
             Log.e("AuthRepository", "Error al obtener nombre de usuario: ${e.message}") // Log del error
             null
         }
+    }
+
+    // --- AGREGADO PARA QUE FUNCIONE COMUNIDAD ---
+    fun obtenerUid(): String? {
+        return auth.currentUser?.uid
     }
 }
