@@ -47,7 +47,7 @@ Para compilar y ejecutar este proyecto localmente, necesitarás configurar tu pr
 ### 1. Clonar el Repositorio
 
 ```bash
-git clone https://github.com/Francisx0999/Desarrollo-Ap.-Moviles.git
+https://github.com/Raynagah/EV3-y-Examen-Aplicaciones-Moviles.git
 ```
 
 ### 2. Abrir en Android Studio
